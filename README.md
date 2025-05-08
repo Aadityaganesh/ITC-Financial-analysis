@@ -1,10 +1,4 @@
-# ITC-Financial-analysis
-# 📊 ITC Financial Analysis with AI
-
-This project is an AI-powered **financial analysis tool for ITC Ltd.** It scrapes and processes ITC’s annual reports, investor presentations, and stock price history, and integrates them into a **streamlined query system** using **LLMs (Large Language Models)**. The final product is a **Streamlit app** where users can ask natural language questions about ITC’s financial performance and receive answers **with citations and references.**
-
----
-# 💼 ITC Financial Analysis with AI
+# 💼Unlock ITC’s Financial Data with AI-Powered Query Analysis
 
 A complete AI-powered system to analyze ITC Ltd.'s financial reports, investor presentations, and stock price history. The system enables natural language Q&A with **source citation** and provides **semantic search** over all collected documents using embeddings.
 
