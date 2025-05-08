@@ -45,14 +45,17 @@ A **SQLite database** is used to store metadata and extracted document text.
 
 **Database table schema:**
 
-```sql
-CREATE TABLE IF NOT EXISTS document_metadata (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    year INTEGER,
-    file_name TEXT,
-    description TEXT,
-    content TEXT
-);
+    ```sql
+    CREATE TABLE IF NOT EXISTS document_metadata (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        year INTEGER,
+        file_name TEXT,
+        description TEXT,
+        content TEXT
+    );
+
+
+
 
 # **Document Embedding and Querying with ChromaDB and Hugging Face's Llama-3.3-70B-Instruct**
 
