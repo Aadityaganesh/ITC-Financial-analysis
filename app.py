@@ -13,8 +13,8 @@ st.title("📈 ITC Financial Analysis with LLaMA-3")
 hf_token = st.text_input("🔐 Enter your Hugging Face API Key:", type="password")
 
 # --- File Paths & Constants ---
-CHROMA_DB_FILE = "chroma.sqlite3"
-SQLITE_DB_FILE = "document_metadata.db"
+DB_PATH = 'database/document_metadata.db'
+CHROMA_DIR = 'embeddings/chroma_embeddings'
 COLLECTION_NAME = "itc_financial_data"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 LLM_MODEL = "meta-llama/Llama-3.3-70B-Instruct"
