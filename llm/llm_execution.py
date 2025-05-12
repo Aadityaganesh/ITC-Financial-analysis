@@ -1,40 +1,42 @@
-import os
 import chromadb
 from sentence_transformers import SentenceTransformer
-from langchain.vectorstores import Chroma
-from langchain.embeddings import SentenceTransformerEmbeddings
 from huggingface_hub import InferenceClient
 
-# STEP 1: Initialize the ChromaDB client and load the collection
-persist_directory = '/content/chroma_db1/chroma.sqlite3'  # Path to the ChromaDB database
-client = chromadb.Client()
+# STEP 1: Initialize the ChromaDB client
+persist_directory = 'embeddings\chroma_embeddings\chroma.sqlite3'
+client = chromadb.PersistentClient(path=persist_directory)
 
-# Load the collection from ChromaDB
-collection = client.get_collection("itc_financial_data")
+# STEP 2: Try to get the collection, or create it if not found
+collection_name = "itc_financial_data"
+try:
+    collection = client.get_collection(collection_name)
+except chromadb.errors.NotFoundError:
+    print(f"Collection '{collection_name}' not found. Creating a new one.")
+    collection = client.create_collection(collection_name)
 
-# STEP 2: Initialize the SentenceTransformer model for query embedding
+
+# STEP 3: Initialize the SentenceTransformer model for query embedding
 query_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# STEP 3: Set up Hugging Face InferenceClient with your API key
-from google.colab import userdata
-hf_key = userdata.get('hf-itc-repo')  # Fetch Hugging Face API key from userdata
-inference_client = InferenceClient(api_key=hf_key)
+# STEP 4: Set up Hugging Face InferenceClient with your API key and valid provider
+hf_key = input("Enter your huggingace token:")
+inference_client = InferenceClient(api_key=hf_key, provider="hf-inference")
 
-# STEP 4: Define the function to query ChromaDB and build the prompt
+# STEP 5: Function to build prompt with context
 def build_prompt_with_context(query, n_results=3):
     # Get the embedding for the query
-    query_embedding = query_model.encode(query)
-    
+    query_embedding = query_model.encode(query).tolist()
+
     # Retrieve top n relevant documents
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=n_results
     )
-    
+
     # Combine the retrieved documents into context
-    retrieved_docs = results['documents'][0]  # List of top documents
-    context = "\n\n".join(retrieved_docs)
-    
+    retrieved_docs = results['documents'][0] if results['documents'] else []
+    context = "\n\n".join(retrieved_docs) if retrieved_docs else "No relevant financial data found."
+
     # Build a system prompt to instruct the LLaMA model
     prompt = (
         f"Objective: Analyze ITC’s revenue trends, profitability, and financial health using AI-scraped data and LLM insights.\n\n"
@@ -44,25 +46,19 @@ def build_prompt_with_context(query, n_results=3):
         f"User's Question: {query}\n\n"
         f"Answer:"
     )
-    
     return prompt
 
-# STEP 5: Define the function to get an answer from Hugging Face Inference API
+# STEP 6: Function to get LLaMA-3 answer from Hugging Face Inference API
 def get_llama_response(prompt):
     completion = inference_client.chat.completions.create(
-        model="meta-llama/Llama-3.3-70B-Instruct",  # Correct model
+        model="meta-llama/Llama-3-70b-instruct",  # Correct model name
         messages=[{"role": "user", "content": prompt}]
     )
     return completion.choices[0].message['content']
 
-# STEP 6: Example query
-query = "What was ITC’s revenue in 2024?"
-
-# Build the prompt with retrieved context from ChromaDB
-prompt = build_prompt_with_context(query)
-
-# Get the answer from the LLaMA-3 model via Hugging Face API
-response = get_llama_response(prompt)
-
-# Output the response
-print(f"Answer: {response}")
+# STEP 7: Run an example query
+if __name__ == "__main__":
+    query = "What was ITC’s revenue in 2024?"
+    prompt = build_prompt_with_context(query)
+    response = get_llama_response(prompt)
+    print(f"\nAnswer:\n{response}")
